@@ -11,7 +11,10 @@ import (
 
 	_ "embed"
 
+	"banner22/internal/charmapp"
+
 	tea "github.com/charmbracelet/bubbletea"
+	redis "github.com/redis/go-redis/v9"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -49,7 +52,7 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	// 	bg = "dark"
 	// }
 
-	// m := termmodel{
+	// m := TermModel{
 	// 	term:      pty.Term,
 	// 	profile:   renderer.ColorProfile().Name(),
 	// 	width:     pty.Window.Width,
@@ -59,22 +62,39 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	// 	quitStyle: quitStyle,
 	// }
 
-	m := spinmodel{
-		textStyle: textStyle,
-		spinnerStyle: spinnerStyle,
-		helpStyle: helpStyle,
+	m := charmapp.Spinmodel{
+		TextStyle: textStyle,
+		SpinnerStyle: spinnerStyle,
+		HelpStyle: helpStyle,
 	}
-	m.resetSpinner()
+	m.ResetSpinner()
 
 	return m, []tea.ProgramOption{tea.WithAltScreen()}
 
 }
 
 func main() {
+	// Create redis client
+	rdb := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+		Password: "benisawesome",
+		DB: 0,
+	})
+
+	// Test redis connection
+	pong, err := rdb.Ping(context.Background()).Result()
+	log.Info("Redis connection", "pong", pong, "error", err)
+
 	// Literally all boilerplate, the magic lives in the teaHandler
 	s, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),
 		wish.WithHostKeyPath(".ssh/id_ed25519"),
+		wish.WithPasswordAuth( func(ctx ssh.Context, password string) bool {
+			// show password, then return true
+			log.Info("Password entered", "password", password)
+
+			return false
+		}),
 		wish.WithMiddleware(
 			bubbletea.Middleware(teaHandler),
 			activeterm.Middleware(),

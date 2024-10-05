@@ -1,4 +1,4 @@
-package main
+package charmapp
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type termmodel struct {
+type TermModel struct {
 	term      string
 	profile   string
 	width     int
@@ -17,11 +17,11 @@ type termmodel struct {
 	quitStyle lipgloss.Style
 }
 
-func (m termmodel) Init() tea.Cmd {
+func (m TermModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m termmodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m TermModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.height = msg.Height
@@ -35,7 +35,7 @@ func (m termmodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m termmodel) View() string {
+func (m TermModel) View() string {
 	s := fmt.Sprintf("Your term is %s\nYour window size is %dx%d\nBackground: %s\nColor Profile: %s", m.term, m.width, m.height, m.bg, m.profile)
 	return m.txtStyle.Render(s) + "\n\n" + m.quitStyle.Render("Press 'q' to quit\n")
 }

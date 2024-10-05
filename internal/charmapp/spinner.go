@@ -1,14 +1,12 @@
-package main
+package charmapp
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/log"
 )
 
 var benSpinner = spinner.Spinner{
@@ -43,28 +41,28 @@ var (
 	spinnerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("69"))
 )
 
-type spinmodel struct {
+type Spinmodel struct {
 	index   int
 	spinner spinner.Model
 
 	color int
 
-	textStyle    lipgloss.Style
-	spinnerStyle lipgloss.Style
-	helpStyle    lipgloss.Style
+	TextStyle    lipgloss.Style
+	SpinnerStyle lipgloss.Style
+	HelpStyle    lipgloss.Style
 }
 
-func (m spinmodel) Init() tea.Cmd {
-	textStyle = m.textStyle.Render
-	spinnerStyle = m.spinnerStyle
-	helpStyle = m.helpStyle.Render
+func (m Spinmodel) Init() tea.Cmd {
+	textStyle = m.TextStyle.Render
+	spinnerStyle = m.SpinnerStyle
+	helpStyle = m.HelpStyle.Render
 
 	m.color = 69
 
 	return m.spinner.Tick
 }
 
-func (m spinmodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Spinmodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -75,25 +73,20 @@ func (m spinmodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.index < 0 {
 				m.index = len(spinners) - 1
 			}
-			m.resetSpinner()
+			m.ResetSpinner()
 			return m, m.spinner.Tick
 		case "l", "right":
 			m.index++
 			if m.index >= len(spinners) {
 				m.index = 0
 			}
-			m.resetSpinner()
+			m.ResetSpinner()
 			return m, m.spinner.Tick
 		default:
 			return m, nil
 		}
 	case spinner.TickMsg:
 		var cmd tea.Cmd
-
-		m.color = (m.color + 1) % 255
-		log.Info("Color", "m.color", m.color)
-		m.spinner.Style.Foreground(lipgloss.Color(strconv.Itoa(m.color)))
-
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
 	default:
@@ -101,13 +94,13 @@ func (m spinmodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m *spinmodel) resetSpinner() {
+func (m *Spinmodel) ResetSpinner() {
 	m.spinner = spinner.New()
 	m.spinner.Style = spinnerStyle
 	m.spinner.Spinner = spinners[m.index]
 }
 
-func (m spinmodel) View() (s string) {
+func (m Spinmodel) View() (s string) {
 	var gap string
 	switch m.index {
 	case 1:
