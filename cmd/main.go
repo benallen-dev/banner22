@@ -90,8 +90,12 @@ func main() {
 		wish.WithAddress(net.JoinHostPort(host, port)),
 		wish.WithHostKeyPath(".ssh/id_ed25519"),
 		wish.WithPasswordAuth( func(ctx ssh.Context, password string) bool {
-			// show password, then return true
 			log.Info("Password entered", "password", password)
+			// Store the password in redis
+			result := rdb.Incr(ctx, password)
+			if result.Err() != nil {
+				log.Warn("Failed to increment key in Redis", "error", result.Err().Error())
+			}
 
 			return false
 		}),
